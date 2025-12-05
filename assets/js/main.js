@@ -200,108 +200,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // SPLASH SCREEN LOGIC
+    // SPLASH SCREEN LOGIC (REBUILT)
     // ==========================================
     if (isSplash) {
         const progressBar = document.querySelector('.progress-bar');
         const progressText = document.querySelector('.splash-footer');
         const startBtn = document.getElementById('start-btn');
         const progressContainer = document.querySelector('.progress-container');
-        const splashTitle = document.querySelector('.splash-text');
+        const splashText = document.querySelector('.splash-text');
 
-        // Check if we should skip animation (e.g. returning from Hub)
-        let sessionStarted = false;
-        try {
-            if (typeof AppStorage !== 'undefined') {
-                sessionStarted = AppStorage.session.get('session_started');
-            }
-        } catch (e) {
-            console.warn('Storage check failed:', e);
-        }
-        
-        function showStartButton() {
-            if (progressContainer) progressContainer.style.display = 'none';
-            if (progressText) progressText.style.display = 'none';
-            if (startBtn) startBtn.classList.remove('hidden');
-            if (splashTitle) {
-                splashTitle.textContent = 'Pronto!';
-                splashTitle.setAttribute('data-text', 'Pronto!');
-            }
-        }
+        // Simple, robust loading animation
+        let progress = 0;
+        const totalDuration = 2500; // 2.5 seconds
+        const intervalTime = 50;
+        const increment = 100 / (totalDuration / intervalTime);
 
-        if (sessionStarted) {
-            // Skip loading, show button immediately
-            showStartButton();
+        const loadingInterval = setInterval(() => {
+            progress += increment;
             
-            // Fade in vignette if it was active
-            if (vignette) {
-                vignette.classList.add('vignette-active');
-                setTimeout(() => vignette.classList.remove('vignette-active'), 100);
+            // Add some randomness to make it look "real"
+            if (Math.random() > 0.5) progress += Math.random() * 2;
+
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(loadingInterval);
+                finishLoading();
             }
-        } else {
-            // Run Loading Animation
-            let progress = 0;
-            const interval = setInterval(() => {
-                // Random increment
-                progress += Math.random() * 5;
-                if (progress > 100) progress = 100;
 
-                if (progressBar) progressBar.style.width = `${progress}%`;
-                if (progressText) progressText.textContent = `${Math.floor(progress)}%`;
+            updateUI(progress);
+        }, intervalTime);
 
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(showStartButton, 500);
-                }
-            }, 100);
+        function updateUI(percent) {
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (progressText) progressText.textContent = `${Math.floor(percent)}%`;
         }
 
-        // Start Interaction
+        function finishLoading() {
+            setTimeout(() => {
+                if (progressContainer) progressContainer.style.display = 'none';
+                if (progressText) progressText.style.display = 'none';
+                
+                if (splashText) splashText.textContent = "Tudo pronto!";
+                
+                if (startBtn) {
+                    startBtn.classList.remove('hidden');
+                    // Add a small pop animation class if you have one, or just rely on CSS transition
+                    startBtn.style.animation = "popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                }
+            }, 500);
+        }
+
+        // Start Button Interaction
         if (startBtn) {
             startBtn.addEventListener('click', (e) => {
-                // 1. Confetti (Check if system exists)
-                if (typeof confettiSystem !== 'undefined') {
+                e.preventDefault(); // Prevent double firing on some touch devices
+                
+                // 1. Visual Feedback
+                startBtn.textContent = "Entrando...";
+                startBtn.style.transform = "scale(0.95)";
+                
+                // 2. Confetti Burst (Safe check)
+                if (typeof confettiSystem !== 'undefined' && confettiSystem.burst) {
                     const rect = startBtn.getBoundingClientRect();
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-                    confettiSystem.burst(centerX, centerY);
+                    confettiSystem.burst(rect.left + rect.width / 2, rect.top + rect.height / 2);
                 }
 
-                // 2. Vignette & Navigate
+                // 3. Transition
                 if (vignette) vignette.classList.add('vignette-active');
-                
-                // Save state
-                try {
-                    if (typeof AppStorage !== 'undefined') {
-                        AppStorage.session.set('session_started', true);
-                    }
-                } catch (e) {
-                    console.warn('Storage save failed:', e);
-                }
 
+                // 4. Navigate (Delay for effect)
                 setTimeout(() => {
-                    // Navigate to Hub
+                    // Try to save state, but don't block navigation if it fails
+                    try {
+                        if (typeof AppStorage !== 'undefined') {
+                            AppStorage.session.set('session_started', true);
+                        }
+                    } catch (e) { console.warn('Storage warning:', e); }
+
                     window.location.href = 'assets/html/hub.html';
-                }, 1000);
+                }, 800);
             });
-            
-            // Setup mobile tap for start button specifically
-            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            if (isTouch) {
-                startBtn.addEventListener('click', (e) => {
-                    if (!startBtn.classList.contains('hover-active')) {
-                        e.preventDefault();
-                        e.stopImmediatePropagation(); // Stop the main click handler
-                        startBtn.classList.add('hover-active');
-                    }
-                });
-                
-                document.addEventListener('click', (e) => {
-                    if (!startBtn.contains(e.target)) {
-                        startBtn.classList.remove('hover-active');
-                    }
-                });
-            }
         }
     }
 });
