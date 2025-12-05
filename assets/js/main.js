@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const splashTitle = document.querySelector('.splash-text');
 
         // Check if we should skip animation (e.g. returning from Hub)
-        const sessionStarted = Storage.session.get('session_started');
+        const sessionStarted = AppStorage.session.get('session_started');
         
         if (sessionStarted) {
             // Skip loading, show button immediately
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             vignette.classList.add('vignette-active');
             
             // Save state
-            Storage.session.set('session_started', true);
+            AppStorage.session.set('session_started', true);
 
             setTimeout(() => {
                 // Navigate to Hub

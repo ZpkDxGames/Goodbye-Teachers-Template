@@ -3,7 +3,7 @@
  * Handles LocalStorage and SessionStorage operations safely.
  */
 
-const Storage = {
+const AppStorage = {
     // LocalStorage (Persistent)
     local: {
         get: (key) => {
@@ -49,8 +49,8 @@ const Storage = {
 };
 
 // Initialize default user data if not present
-if (!Storage.local.get('user_data')) {
-    Storage.local.set('user_data', {
+if (!AppStorage.local.get('user_data')) {
+    AppStorage.local.set('user_data', {
         visited: false,
         interactions: 0,
         theme: 'default'

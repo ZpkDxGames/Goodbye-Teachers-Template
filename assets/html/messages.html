@@ -1,83 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora | AI</title>
+    <title>Mensagens</title>
     <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .messages-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 70%;
+        }
+
+        .message-card {
+            background-color: var(--surface-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 20px;
+        }
+
+        .message-card.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .message-text {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            line-height: 1.6;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Navigation Arrows */
+        .nav-arrow {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+            flex-shrink: 0;
+        }
+
+        .nav-arrow:hover {
+            background: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .nav-arrow img {
+            width: 24px;
+            height: 24px;
+            filter: invert(1);
+        }
+
+        /* Dots */
+        .dots-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background-color: var(--primary-color);
+            transform: scale(1.2);
+        }
+
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            z-index: 100;
+        }
+    </style>
 </head>
-<body class="scrollable-body">
+<body>
+    <!-- Vignette Overlay -->
     <div id="vignette-overlay" class="vignette-active"></div>
-    
+
     <header>
-        <button class="icon-btn" id="back-btn" onclick="goBack()">
+        <button class="icon-btn" id="back-btn" onclick="window.location.href='hub.html'" aria-label="Voltar">
             <img src="../media/icons/arrow-left.svg" alt="Back" class="icon-svg">
-        </button>
-        <h1 id="chat-page-title">AI Tutor</h1>
-        <button class="icon-btn" id="history-btn">
-            <img src="../media/icons/history.svg" alt="History" class="icon-svg">
         </button>
     </header>
 
-    <main class="chat-interface">
-        <div class="chat-messages" id="chat-messages">
-            <!-- Messages will be injected here -->
+    <main class="messages-container">
+        <button id="prev-btn" class="nav-arrow" aria-label="Anterior">
+            <img src="../media/icons/arrow-left.svg" alt="Previous">
+        </button>
+
+        <div id="message-card" class="message-card">
+            <p id="message-text" class="message-text"></p>
+            
+            <div class="dots-container" id="dots-container">
+                <!-- Dots will be generated here -->
+            </div>
         </div>
-        
-        <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="Faça uma pergunta..." autocomplete="off">
-            <button id="send-btn">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                </svg>
-            </button>
-        </div>
+
+        <button id="next-btn" class="nav-arrow" aria-label="Próximo">
+            <img src="../media/icons/arrow-right.svg" alt="Next">
+        </button>
     </main>
 
-    <!-- History Modal -->
-    <div class="modal" id="history-modal">
-        <div class="modal-content settings-content">
-            <span class="close-modal" id="close-history">&times;</span>
-            <h2>Histórico de Conversas</h2>
-            
-            <div class="sessions-list" id="sessions-list">
-                <!-- Sessions injected here -->
-            </div>
-
-            <button class="save-btn" id="new-chat-btn">+ Nova Conversa</button>
-        </div>
-    </div>
-
-    <!-- Confirmation Modal -->
-    <div class="modal" id="confirm-modal">
-        <div class="modal-content confirm-content">
-            <h3>Tem certeza?</h3>
-            <p id="confirm-message">Você realmente deseja excluir esta conversa?</p>
-            <div class="confirm-actions">
-                <button class="cancel-btn" id="confirm-cancel">Cancelar</button>
-                <button class="delete-btn" id="confirm-yes">Excluir</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/config.js"></script>
-    <script src="../js/chat.js"></script>
-    <script>
-        // Apply Config
-        if (typeof TEACHER_CONFIG !== 'undefined') {
-            document.getElementById('chat-page-title').textContent = TEACHER_CONFIG.chatPage.title;
-            document.title = `Goodbye Surprise - ${TEACHER_CONFIG.chatPage.title}`;
-        }
-
-        const vignette = document.getElementById('vignette-overlay');
-        window.addEventListener('load', () => {
-            setTimeout(() => { if(vignette) vignette.classList.remove('vignette-active'); }, 100);
-        });
-        function goBack() {
-            if(vignette) vignette.classList.add('vignette-active');
-            setTimeout(() => { window.location.href = 'hub.html'; }, 500);
-        }
-    </script>
+    <script src="../js/messages.js"></script>
 </body>
 </html>

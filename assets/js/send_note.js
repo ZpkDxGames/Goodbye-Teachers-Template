@@ -1,4 +1,4 @@
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1446295261549690971/WG3J1OcGB58ahnaEBBn7JkM6kCZEmCAWkGvkCkbPs6zAQIe-aiUrWmT0nOvssTC2S9NY"; // Paste your Discord Webhook URL here
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1446315220728283296/HR-pgcf5ENV9sZ9iPFYGsAGafSfA17jNJ3Iod6V3M95Lb0WdidoKPbY-azDJcAgzacag"; // Paste your Discord Webhook URL here
 
 document.getElementById('note-form').addEventListener('submit', async function(e) {
     e.preventDefault();
